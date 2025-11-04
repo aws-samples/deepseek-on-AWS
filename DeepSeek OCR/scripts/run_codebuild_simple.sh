@@ -34,7 +34,7 @@ aws s3 ls s3://${S3_BUCKET} >/dev/null 2>&1 || aws s3 mb s3://${S3_BUCKET} --reg
 
 # Step 2: Zip source code
 echo "📁 Creating source archive..."
-python3 "DeepSeek OCR/scripts/create_source_zip.py"
+python3 "${REPO_ROOT}/DeepSeek OCR/scripts/create_source_zip.py"
 
 # Step 3: Upload to S3
 echo "⬆️  Uploading to S3..."
