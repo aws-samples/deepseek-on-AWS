@@ -11,6 +11,7 @@ Environment Variables:
     DEVICE: Compute device (cuda, cpu, auto)
     DTYPE: Model dtype (bfloat16, float16, float32)
     MAX_TIMEOUT: Maximum processing timeout in seconds
+    MAX_REQUEST_SIZE_MB: Maximum request body size in MB (default: 100, DoS protection)
     AWS_REGION: AWS region for S3 downloads
     ENVIRONMENT: Deployment environment (dev, staging, prod)
 """
@@ -69,8 +70,9 @@ class ServerConfig:
     port: int = 8080
     workers: int = 1  # Single worker for model singleton
 
-    # Rate limiting
+    # Rate limiting and security
     max_concurrent_requests: int = 10
+    max_request_size_mb: int = 100  # Maximum request body size in MB (DoS protection)
 
     def __post_init__(self):
         """Validate server configuration"""
@@ -80,6 +82,8 @@ class ServerConfig:
             raise ValueError("Invalid port number")
         if self.workers < 1:
             raise ValueError("workers must be >= 1")
+        if self.max_request_size_mb <= 0:
+            raise ValueError("max_request_size_mb must be positive")
 
 
 @dataclass
@@ -154,6 +158,7 @@ class Config:
             port=int(os.getenv("PORT", "8080")),
             workers=int(os.getenv("WORKERS", "1")),
             max_concurrent_requests=int(os.getenv("MAX_CONCURRENT_REQUESTS", "10")),
+            max_request_size_mb=int(os.getenv("MAX_REQUEST_SIZE_MB", "100")),
         )
 
         # AWS configuration
@@ -216,6 +221,7 @@ class Config:
                 "max_timeout": self.server.max_timeout,
                 "port": self.server.port,
                 "workers": self.server.workers,
+                "max_request_size_mb": self.server.max_request_size_mb,
             },
             "aws": {
                 "region": self.aws.region,

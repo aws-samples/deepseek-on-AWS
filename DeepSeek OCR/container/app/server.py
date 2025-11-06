@@ -160,6 +160,23 @@ async def invocations(req: Request):
             raise HTTPException(status_code=503, detail=f"Model failed: {error}")
         raise HTTPException(status_code=503, detail="Model not ready")
 
+    # SECURITY: Validate request size to prevent DoS attacks
+    max_size_bytes = config.server.max_request_size_mb * 1024 * 1024
+    content_length = req.headers.get('content-length')
+
+    if content_length:
+        content_length_int = int(content_length)
+        if content_length_int > max_size_bytes:
+            log.warning(
+                f"Request rejected: size {content_length_int} bytes exceeds limit "
+                f"{max_size_bytes} bytes ({config.server.max_request_size_mb}MB)"
+            )
+            raise HTTPException(
+                status_code=413,
+                detail=f"Request too large: {content_length_int} bytes exceeds {config.server.max_request_size_mb}MB limit"
+            )
+        log.info(f"Request size: {content_length_int} bytes (within {config.server.max_request_size_mb}MB limit)")
+
     # Get content type from header
     content_type = req.headers.get('content-type', '').lower()
 
@@ -175,6 +192,17 @@ async def invocations(req: Request):
         # Not JSON and not claiming to be - treat as raw binary data
         is_json = False
         raw_data = await req.body()
+
+        # SECURITY: Double-check actual body size matches Content-Length
+        if len(raw_data) > max_size_bytes:
+            log.error(
+                f"Request body size {len(raw_data)} bytes exceeds limit despite Content-Length check!"
+            )
+            raise HTTPException(
+                status_code=413,
+                detail=f"Request body too large: {len(raw_data)} bytes exceeds {config.server.max_request_size_mb}MB limit"
+            )
+
         log.info(f"Received raw binary data ({len(raw_data)} bytes), Content-Type: {content_type}")
 
         # Detect if PDF or image based on content type or magic bytes
