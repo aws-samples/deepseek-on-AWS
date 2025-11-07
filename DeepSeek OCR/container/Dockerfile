@@ -1,6 +1,7 @@
 # DeepSeek OCR SageMaker BYOC with Transformers
 # Using NVIDIA NGC registry (no rate limits like Docker Hub)
-FROM nvcr.io/nvidia/cuda:12.1.0-devel-ubuntu22.04
+# CUDA 12.4 required for PyTorch 2.6.0 (fixes CRITICAL RCE CVE)
+FROM nvcr.io/nvidia/cuda:12.4.1-devel-ubuntu22.04
 
 # System packages
 RUN apt-get update && \
@@ -22,11 +23,11 @@ RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1
 # Upgrade pip
 RUN python3 -m pip install --no-cache-dir --upgrade pip setuptools wheel
 
-# Install PyTorch with CUDA 12.1
+# Install PyTorch with CUDA 12.4 (2.6.0 fixes CRITICAL RCE CVE in torch.load)
 RUN pip install --no-cache-dir \
-    torch==2.5.1 \
-    torchvision==0.20.1 \
-    --index-url https://download.pytorch.org/whl/cu121
+    torch==2.6.0 \
+    torchvision==0.21.0 \
+    --index-url https://download.pytorch.org/whl/cu124
 
 # Install ninja and psutil (required for flash-attn compilation)
 RUN pip install --no-cache-dir ninja psutil packaging
