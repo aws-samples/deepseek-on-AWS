@@ -14,7 +14,7 @@ torch==2.6.0              # PyTorch with CUDA 12.4 support (2.6.0 fixes CRITICAL
 torchvision==0.21.0       # Vision utilities (installed with torch)
 
 ## Model Backend
-transformers==4.46.3      # HuggingFace Transformers (official DeepSeek-OCR backend)
+transformers==4.53.0      # HuggingFace Transformers (official DeepSeek-OCR backend)
 tokenizers==0.20.3        # Fast tokenizers
 accelerate                # Training/inference acceleration utilities
 
