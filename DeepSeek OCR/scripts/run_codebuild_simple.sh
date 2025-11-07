@@ -13,7 +13,7 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 # Change to repo root for all operations
 cd "${REPO_ROOT}"
 
-AWS_REGION=${AWS_DEFAULT_REGION:-us-west-2}
+AWS_REGION=$(aws configure get region || echo "${AWS_DEFAULT_REGION:-us-east-1}")
 AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 PROJECT_NAME="deepseek-ocr-byoc-build"
 S3_BUCKET="sagemaker-${AWS_REGION}-${AWS_ACCOUNT_ID}"
