@@ -138,6 +138,12 @@ This will:
 3. Build Docker image (~15-20 minutes)
 4. Push to Amazon ECR
 
+**Note**: If you encounter ECR permission errors, run the fix script:
+```bash
+./fix_ecr_permissions.sh
+```
+See [Troubleshooting - ECR Permissions](#codebuild-fails-with-ecr-permission-errors) for details.
+
 ### Option B: Local Docker Build
 
 Build and push the container locally:
@@ -634,7 +640,83 @@ aws logs tail /aws/sagemaker/Endpoints/your-endpoint-name --follow
 **Common Issues:**
 - Model download timeout: Ensure `HF_HUB_ENABLE_HF_TRANSFER=1` is set
 - OOM errors: Use larger instance (ml.g5.4xlarge)
-- Image pull errors: Verify ECR permissions
+- Image pull errors: Verify ECR permissions (see below)
+
+### CodeBuild Fails with ECR Permission Errors
+
+**Problem**: CodeBuild fails during `ecr get-login-password`, `ecr create-repository`, or `docker push` with access denied errors.
+
+**Common Error Messages:**
+```
+AccessDeniedException: User/Role is not authorized to perform: ecr:GetAuthorizationToken
+AccessDeniedException: User/Role is not authorized to perform: ecr:CreateRepository
+AccessDeniedException: User/Role is not authorized to perform: ecr:PutImage
+```
+
+**Root Cause**: The CodeBuild service role (`AmazonSageMakerServiceCatalogProductsCodeBuildRole`) is missing required ECR permissions.
+
+**Solution 1: Automated Fix (Recommended)**
+```bash
+cd "DeepSeek OCR/scripts"
+./fix_ecr_permissions.sh
+```
+
+This script will:
+- Check if the CodeBuild role exists
+- Verify ECR permissions
+- Automatically add missing permissions
+- Validate the fix
+
+**Solution 2: Manual Fix via AWS Console**
+
+1. Go to [IAM Console](https://console.aws.amazon.com/iam/)
+2. Navigate to **Roles** → Search for `AmazonSageMakerServiceCatalogProductsCodeBuildRole`
+3. Click **Add permissions** → **Attach policies**
+4. Search and attach: `AmazonEC2ContainerRegistryPowerUser`
+5. Or create inline policy using `scripts/ecr-codebuild-policy.json`
+
+**Solution 3: Manual Fix via AWS CLI**
+```bash
+# Attach the ECR policy to the CodeBuild role
+aws iam put-role-policy \
+    --role-name AmazonSageMakerServiceCatalogProductsCodeBuildRole \
+    --policy-name DeepSeekOCR-ECR-Access \
+    --policy-document file://scripts/ecr-codebuild-policy.json
+```
+
+**Required ECR Permissions:**
+The CodeBuild role needs these permissions:
+- `ecr:GetAuthorizationToken` - Docker login to ECR
+- `ecr:CreateRepository` - Create ECR repository if it doesn't exist
+- `ecr:DescribeRepositories` - Check if repository exists
+- `ecr:BatchCheckLayerAvailability` - Check image layers during push
+- `ecr:PutImage` - Upload Docker image
+- `ecr:InitiateLayerUpload` - Start layer upload
+- `ecr:UploadLayerPart` - Upload image layers
+- `ecr:CompleteLayerUpload` - Finish layer upload
+
+**If Role Doesn't Exist:**
+
+The `AmazonSageMakerServiceCatalogProductsCodeBuildRole` is created automatically when you use SageMaker Service Catalog. If it doesn't exist:
+
+1. **Option A**: Use SageMaker Service Catalog
+   - Go to SageMaker Console → **Projects** → **Create Project**
+   - Select any template and start creating (you can delete the project after)
+   - This creates the required role automatically
+
+2. **Option B**: Run the automated fix script
+   ```bash
+   ./scripts/fix_ecr_permissions.sh
+   ```
+   The script will offer to create the role for you.
+
+**Verify Permissions:**
+```bash
+# Check if role has ECR permissions
+aws iam get-role-policy \
+    --role-name AmazonSageMakerServiceCatalogProductsCodeBuildRole \
+    --policy-name DeepSeekOCR-ECR-Access
+```
 
 ### /ping Returns 503
 
