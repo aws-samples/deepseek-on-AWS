@@ -40,7 +40,7 @@ pypdfium2==4.30.0         # PDF rendering
 
 ## AWS Integration
 boto3==1.35.91            # AWS SDK
-requests==2.32.3          # HTTP client
+requests==2.32.4          # HTTP client
 
 ## Model Download Optimization
 hf-transfer               # Fast HuggingFace model downloads
