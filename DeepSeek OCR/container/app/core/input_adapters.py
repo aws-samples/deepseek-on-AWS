@@ -70,14 +70,14 @@ def validate_url_ssrf(url: str) -> None:
                 ip = ipaddress.ip_address(ip_str)
 
                 # Block private IP ranges
-                if ip.is_private:
+                if ip.is_private:  # nosemgrep: python.lang.maintainability.is-function-without-parentheses
                     raise HTTPException(
                         status_code=403,
                         detail=f"Access to private IP ranges is forbidden: {ip_str}"
                     )
 
                 # Block loopback addresses (127.0.0.0/8, ::1)
-                if ip.is_loopback:
+                if ip.is_loopback:  # nosemgrep: python.lang.maintainability.is-function-without-parentheses
                     raise HTTPException(
                         status_code=403,
                         detail=f"Access to loopback addresses is forbidden: {ip_str}"
@@ -85,21 +85,21 @@ def validate_url_ssrf(url: str) -> None:
 
                 # Block link-local addresses (169.254.0.0/16, fe80::/10)
                 # This includes AWS metadata endpoint 169.254.169.254
-                if ip.is_link_local:
+                if ip.is_link_local:  # nosemgrep: python.lang.maintainability.is-function-without-parentheses
                     raise HTTPException(
                         status_code=403,
                         detail=f"Access to link-local addresses is forbidden (AWS metadata endpoint blocked): {ip_str}"
                     )
 
                 # Block multicast addresses
-                if ip.is_multicast:
+                if ip.is_multicast:  # nosemgrep: python.lang.maintainability.is-function-without-parentheses
                     raise HTTPException(
                         status_code=403,
                         detail=f"Access to multicast addresses is forbidden: {ip_str}"
                     )
 
                 # Block reserved addresses
-                if ip.is_reserved:
+                if ip.is_reserved:  # nosemgrep: python.lang.maintainability.is-function-without-parentheses
                     raise HTTPException(
                         status_code=403,
                         detail=f"Access to reserved addresses is forbidden: {ip_str}"

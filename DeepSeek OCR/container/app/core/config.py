@@ -7,6 +7,7 @@ is handled by SageMaker AsyncInferenceConfig.
 
 Environment Variables:
     MODEL_ID: HuggingFace model ID (default: deepseek-ai/DeepSeek-OCR)
+    MODEL_REVISION: Optional model revision/commit hash for pinning (e.g., "9f30c71")
     DEFAULT_PROMPT: Default OCR prompt
     DEVICE: Compute device (cuda, cpu, auto)
     DTYPE: Model dtype (bfloat16, float16, float32)
@@ -30,6 +31,7 @@ class ModelConfig:
     """Model-related configuration"""
 
     model_id: str = "deepseek-ai/DeepSeek-OCR"
+    model_revision: Optional[str] = None  # Pin to specific commit for reproducibility (e.g., "9f30c71")
     trust_remote_code: bool = True
     use_safetensors: bool = True
     attn_implementation: str = "flash_attention_2"
@@ -66,7 +68,7 @@ class ServerConfig:
     startup_timeout: int = 300  # Model loading timeout (5 min)
 
     # Server settings
-    host: str = "0.0.0.0"
+    host: str = "0.0.0.0"  # Bind to all interfaces (required for Docker/ECS containers)
     port: int = 8080
     workers: int = 1  # Single worker for model singleton
 
@@ -138,6 +140,7 @@ class Config:
         # Model configuration
         model_config = ModelConfig(
             model_id=os.getenv("MODEL_ID", "deepseek-ai/DeepSeek-OCR"),
+            model_revision=os.getenv("MODEL_REVISION"),  # Optional: pin to specific commit
             device=os.getenv("DEVICE", "cuda"),
             dtype=os.getenv("DTYPE", "bfloat16"),
             base_size=int(os.getenv("BASE_SIZE", "1024")),
@@ -154,7 +157,7 @@ class Config:
             ),
             max_timeout=int(os.getenv("MAX_TIMEOUT", "60")),
             startup_timeout=int(os.getenv("STARTUP_TIMEOUT", "300")),
-            host=os.getenv("HOST", "0.0.0.0"),
+            host=os.getenv("HOST", "0.0.0.0"),  # Container binding - use security groups for access control
             port=int(os.getenv("PORT", "8080")),
             workers=int(os.getenv("WORKERS", "1")),
             max_concurrent_requests=int(os.getenv("MAX_CONCURRENT_REQUESTS", "10")),

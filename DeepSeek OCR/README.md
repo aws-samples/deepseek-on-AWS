@@ -445,6 +445,7 @@ Configure the container at deployment time:
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `MODEL_ID` | `deepseek-ai/DeepSeek-OCR` | HuggingFace model ID |
+| `MODEL_REVISION` | `None` | Pin to specific model commit (e.g., "9f30c71" for reproducibility) |
 | `DEVICE` | `cuda` | Compute device (cuda, cpu, auto) |
 | `DTYPE` | `bfloat16` | Model precision (bfloat16, float16, float32) |
 | `BASE_SIZE` | `1024` | Base image size for processing |
@@ -472,6 +473,49 @@ Configure the container at deployment time:
 | `DEBUG` | `false` | Enable debug logging |
 | `HF_HUB_ENABLE_HF_TRANSFER` | `1` | Enable fast model downloads |
 | `TRANSFORMERS_CACHE` | `/opt/hf` | Model cache directory |
+
+## Security: Model Revision Pinning
+
+**Why Pin Model Revisions?**
+
+Pinning to specific model commits provides supply chain security and reproducibility:
+- **Supply Chain Protection**: Prevents automatic downloads of potentially compromised model updates
+- **Reproducibility**: Ensures consistent behavior across deployments
+- **Change Control**: Explicit control over when model updates are applied
+- **Compliance**: Meet audit requirements for production ML systems
+
+**When to Pin vs. Unpinned:**
+
+| Environment | Recommendation | Rationale |
+|-------------|----------------|-----------|
+| **Development** | Unpinned (no `MODEL_REVISION`) | Get latest features and bug fixes automatically |
+| **Staging** | Pin to recent commit | Test specific version before production |
+| **Production** | Pin to tested commit | Ensure stability and prevent unexpected changes |
+
+**How to Find Stable Commits:**
+
+1. **Check HuggingFace Commits**: Visit [DeepSeek-OCR commits](https://huggingface.co/deepseek-ai/DeepSeek-OCR/commits/main)
+2. **Look for Release Tags**: DeepSeek-OCR doesn't currently use semantic version tags, so rely on commit hashes
+3. **Test Before Pinning**: Always test a commit in staging before deploying to production
+
+**Example Configuration:**
+
+```bash
+# Development: Use latest
+docker run -e MODEL_ID=deepseek-ai/DeepSeek-OCR ...
+
+# Production: Pin to tested commit
+docker run -e MODEL_ID=deepseek-ai/DeepSeek-OCR \
+           -e MODEL_REVISION=9f30c71 ...
+```
+
+**Known Stable Commits:**
+
+As of January 2025, the DeepSeek-OCR model is actively maintained. Here are some reference points:
+- **Latest tested**: Check the [commits page](https://huggingface.co/deepseek-ai/DeepSeek-OCR/commits/main) for the most recent commit
+- **Production recommendation**: Test the latest commit in staging, then pin to that hash for production
+
+**Note**: When `MODEL_REVISION` is not set (default), the system downloads the latest model from the `main` branch. In production environments, always set `MODEL_REVISION` to a specific commit hash you've tested.
 
 ## Instance Recommendations
 

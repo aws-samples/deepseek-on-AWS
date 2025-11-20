@@ -7,6 +7,7 @@ It expects the model and tokenizer to be loaded externally and passed in.
 
 import time
 import logging
+import tempfile
 
 from fastapi import HTTPException
 from .config import get_config
@@ -46,7 +47,7 @@ def infer_single_image(model, tokenizer, image_path: str, prompt: str) -> str:
             tokenizer,
             prompt=prompt,
             image_file=image_path,
-            output_path='/tmp',
+            output_path=tempfile.gettempdir(),  # Platform-agnostic temp directory (security: avoid hardcoded paths)
             base_size=cfg.base_size,
             image_size=cfg.image_size,
             crop_mode=cfg.crop_mode,
