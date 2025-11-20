@@ -68,7 +68,7 @@ class ServerConfig:
     startup_timeout: int = 300  # Model loading timeout (5 min)
 
     # Server settings
-    host: str = "0.0.0.0"  # Bind to all interfaces (required for Docker/ECS containers)
+    host: str = "0.0.0.0"  # nosec B104 - Bind to all interfaces (required for Docker/ECS containers)
     port: int = 8080
     workers: int = 1  # Single worker for model singleton
 
@@ -157,7 +157,7 @@ class Config:
             ),
             max_timeout=int(os.getenv("MAX_TIMEOUT", "60")),
             startup_timeout=int(os.getenv("STARTUP_TIMEOUT", "300")),
-            host=os.getenv("HOST", "0.0.0.0"),  # Container binding - use security groups for access control
+            host=os.getenv("HOST", "0.0.0.0"),  # nosec B104 - Container binding - use security groups for access control
             port=int(os.getenv("PORT", "8080")),
             workers=int(os.getenv("WORKERS", "1")),
             max_concurrent_requests=int(os.getenv("MAX_CONCURRENT_REQUESTS", "10")),

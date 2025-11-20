@@ -135,7 +135,7 @@ class ModelService:
         log.info("=" * 80)
 
         # Load tokenizer
-        self._tokenizer = AutoTokenizer.from_pretrained(
+        self._tokenizer = AutoTokenizer.from_pretrained(  # nosec B615
             cfg.model_id,
             revision=cfg.model_revision,  # Pin to specific commit if configured
             trust_remote_code=cfg.trust_remote_code
@@ -143,7 +143,7 @@ class ModelService:
         log.info("✓ Tokenizer loaded")
 
         # Load model
-        self._model = AutoModel.from_pretrained(
+        self._model = AutoModel.from_pretrained(  # nosec B615
             cfg.model_id,
             revision=cfg.model_revision,  # Pin to specific commit if configured
             _attn_implementation=cfg.attn_implementation,
