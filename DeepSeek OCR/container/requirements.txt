@@ -10,7 +10,7 @@
 # - Pin exact versions for reproducibility
 
 ## Deep Learning Framework
-torch==2.6.0              # PyTorch with CUDA 12.4 support (2.6.0 fixes CRITICAL RCE CVE)
+torch==2.8.0              # PyTorch with CUDA 12.4 support (2.6.0 fixes CRITICAL RCE CVE)
 torchvision==0.21.0       # Vision utilities (installed with torch)
 
 ## Model Backend
