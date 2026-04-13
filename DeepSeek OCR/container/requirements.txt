@@ -35,7 +35,7 @@ uvicorn[standard]==0.32.1 # ASGI server
 pydantic==2.10.3          # Data validation
 
 ## Image/PDF Processing
-Pillow==11.0.0            # Image manipulation
+Pillow==12.2.0            # Image manipulation
 pypdfium2==4.30.0         # PDF rendering
 
 ## AWS Integration
